@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	articles := article.New()
+	var articles article.Articles
+	articles = &article.ArticleList{}
 	// users := user.New()
 
 	r := gin.Default()

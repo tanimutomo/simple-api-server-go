@@ -1,23 +1,24 @@
 package article
 
-type Item struct {
+type Article struct {
 	Title       string `json:"title"`
 	Tag         string `json:"tag"`
 	Description string `json:"description"`
 }
 
-type Articles struct {
-	Items []Item
+type ArticleList struct {
+	Articles []Article
 }
 
-func New() *Articles {
-	return &Articles{}
+type Articles interface {
+	Add(Article)
+	GetAll() []Article
 }
 
-func (r *Articles) Add(item Item) {
-	r.Items = append(r.Items, item)
+func (r *ArticleList) Add(article Article) {
+	r.Articles = append(r.Articles, article)
 }
 
-func (r *Articles) GetAll() []Item {
-	return r.Items
+func (r *ArticleList) GetAll() []Article {
+	return r.Articles
 }

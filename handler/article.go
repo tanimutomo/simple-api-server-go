@@ -8,7 +8,7 @@ import (
 	"github.com/tanimutomo/simple-api-server-go/auth"
 )
 
-func ArticleGet(articles *article.Articles) gin.HandlerFunc {
+func ArticleGet(articles article.Articles) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Verrify Token
 		_, err := auth.VerifyToken(c.Request)
@@ -21,7 +21,7 @@ func ArticleGet(articles *article.Articles) gin.HandlerFunc {
 	}
 }
 
-func ArticlePost(articles *article.Articles) gin.HandlerFunc {
+func ArticlePost(articles article.Articles) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Verrify Token
 		_, err := auth.VerifyToken(c.Request)
@@ -29,10 +29,10 @@ func ArticlePost(articles *article.Articles) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"message": err})
 		}
 
-		requestBody := article.Item{}
+		requestBody := article.Article{}
 		c.Bind(&requestBody) // Push requested article to requestBody by c.Bind
 
-		item := article.Item{
+		item := article.Article{
 			Title:       requestBody.Title,
 			Tag:         requestBody.Tag,
 			Description: requestBody.Description,
