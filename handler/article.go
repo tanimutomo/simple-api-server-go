@@ -34,6 +34,7 @@ func ArticlePost(articles *article.Articles) gin.HandlerFunc {
 
 		item := article.Item{
 			Title:       requestBody.Title,
+			Tag:         requestBody.Tag,
 			Description: requestBody.Description,
 		}
 		articles.Add(item) // Add new article to articles in main.go
