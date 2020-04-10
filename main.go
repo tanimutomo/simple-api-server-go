@@ -14,7 +14,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/auth", auth.GetToken())
 	r.GET("/articles", handler.ArticleGet(articles))
-	r.POST("/articles", handler.ArticlePost(articles))
+	r.POST("/articles/new", handler.ArticlePost(articles))
 
 	r.Run()
 }
