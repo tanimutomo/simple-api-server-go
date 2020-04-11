@@ -1,13 +1,22 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/tanimutomo/simple-api-server-go/db"
 	"github.com/tanimutomo/simple-api-server-go/handler"
 )
 
 func main() {
 	r := gin.Default()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	db.Init()
 

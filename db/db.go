@@ -1,22 +1,14 @@
 package db
 
 import (
-	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/tanimutomo/simple-api-server-go/crypto"
 )
 
 func gormConnect() *gorm.DB {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	DBMS := os.Getenv("SASG_DBMS")
 	USER := os.Getenv("SASG_USER")
 	PASS := os.Getenv("SASG_PASS")
