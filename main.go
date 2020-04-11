@@ -31,8 +31,13 @@ func main() {
 	r.POST("/articles/:username", handler.PostArticle())
 	// Update article
 	r.POST("/articles/:username/:articleId", handler.UpdateArticle())
+	// Add a new tag to article
+	r.POST("/articles/:username/:articleId/tags", handler.AddTag())
 	// Delete article
 	r.DELETE("/articles/:username/:articleId", handler.DeleteArticle())
+
+	// Get a list of tags
+	r.GET("/tags/:username", handler.GetTags())
 
 	r.Run(":8080")
 }
