@@ -25,14 +25,14 @@ func main() {
 	// Login
 	r.POST("/login", handler.Login())
 
-	// Get a list of tweets
-	r.GET("/users/:username/articles", handler.GetArticles())
-	// Post a new tweet
-	r.POST("/users/:username/articles", handler.PostArticle())
+	// Get a list of articles
+	r.GET("/articles/:username", handler.GetArticles())
+	// Post a new article
+	r.POST("/articles/:username", handler.PostArticle())
 	// Update
-	r.POST("/users/:username/articles/:articleId", handler.UpdateArticle())
+	r.POST("/articles/:username/:articleId", handler.UpdateArticle())
 	// Delete
-	r.DELETE("/users/:username/articles/:articleId", handler.DeleteArticle())
+	r.DELETE("/articles/:username/:articleId", handler.DeleteArticle())
 
 	r.Run(":8080")
 }
