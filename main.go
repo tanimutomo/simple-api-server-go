@@ -22,16 +22,16 @@ func main() {
 
 	// Signup
 	r.POST("/signup", handler.Signup())
-	// Login
+	// Login -> Get token
 	r.POST("/login", handler.Login())
 
 	// Get a list of articles
 	r.GET("/articles/:username", handler.GetArticles())
 	// Post a new article
 	r.POST("/articles/:username", handler.PostArticle())
-	// Update
+	// Update article
 	r.POST("/articles/:username/:articleId", handler.UpdateArticle())
-	// Delete
+	// Delete article
 	r.DELETE("/articles/:username/:articleId", handler.DeleteArticle())
 
 	r.Run(":8080")

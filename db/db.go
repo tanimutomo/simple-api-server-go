@@ -1,6 +1,7 @@
 package db
 
 import (
+	// "log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -30,6 +31,7 @@ func Init() {
 
 	defer db.Close()
 	db.AutoMigrate(&Article{})
+	db.AutoMigrate(&Tag{})
 	db.AutoMigrate(&User{})
 }
 
@@ -40,8 +42,14 @@ type Article struct {
 	gorm.Model
 	Title    string `json:"title" binding:"required"`
 	Content  string `json:"content" binding:"required"`
-	Tag      string `json:"tag"`
+	Tags     []Tag  `json:"tags" gorm:"foreignkey:ArticleID"`
 	Username string `json:"username"`
+}
+
+type Tag struct {
+	gorm.Model
+	Name      string
+	ArticleID uint
 }
 
 // Get all data
@@ -64,7 +72,7 @@ func PostArticle(article Article) {
 		Title:    article.Title,
 		Content:  article.Content,
 		Username: article.Username,
-		Tag:      article.Tag,
+		Tags:     article.Tags,
 	})
 }
 
@@ -72,13 +80,18 @@ func PostArticle(article Article) {
 func UpdateArticle(articleId int, updateArticle Article) interface{} {
 	db := gormConnect()
 
+	// Delete old tags associated to this article
+	var tag Tag
+	db.Where("article_id = ?", articleId).Delete(&tag)
+
+	// Update article
 	var article Article
 	db.First(&article, articleId)
 	if err := updateArticleContents(&article, updateArticle); err != nil {
 		return err
 	}
-
 	db.Save(&article)
+
 	db.Close()
 	return nil
 }
@@ -147,8 +160,8 @@ func updateArticleContents(currentArticle *Article, newArticle Article) interfac
 	if newArticle.Content != "" {
 		currentArticle.Content = newArticle.Content
 	}
-	if newArticle.Tag != "" {
-		currentArticle.Tag = newArticle.Tag
+	if len(newArticle.Tags) != 0 {
+		currentArticle.Tags = newArticle.Tags
 	}
 	return nil
 }
