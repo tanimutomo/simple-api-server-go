@@ -40,16 +40,16 @@ func PostArticle(article Article) {
 }
 
 // Update DB
-func UpdateArticle(articleId int, updateArticle Article) interface{} {
+func UpdateArticle(articleID int, updateArticle Article) interface{} {
 	db := gormConnect()
 
 	// Delete old tags associated to this article
 	var tag Tag
-	db.Where("article_id = ?", articleId).Delete(&tag)
+	db.Where("article_id = ?", articleID).Delete(&tag)
 
 	// Update article
 	var article Article
-	db.First(&article, articleId)
+	db.First(&article, articleID)
 	if err := updateArticleContents(&article, updateArticle); err != nil {
 		return err
 	}

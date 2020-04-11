@@ -54,8 +54,8 @@ func UpdateArticle() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
 		} else {
 			username := c.Param("username")
-			articleId := c.Param("articleId")
-			aid, err := strconv.Atoi(articleId)
+			articleID := c.Param("articleID")
+			aid, err := strconv.Atoi(articleID)
 			if err != nil {
 				panic(err)
 			}
@@ -79,8 +79,8 @@ func DeleteArticle() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
 		} else {
 			username := c.Param("username")
-			articleId := c.Param("articleId")
-			aid, err := strconv.Atoi(articleId)
+			articleID := c.Param("articleID")
+			aid, err := strconv.Atoi(articleID)
 			if err != nil {
 				panic(err)
 			}

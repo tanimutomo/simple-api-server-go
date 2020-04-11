@@ -33,12 +33,12 @@ func AddTag() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
 		} else {
 			username := c.Param("username")
-			articleIdStr := c.Param("articleId")
-			articleId, err := strconv.ParseUint(articleIdStr, 10, 32)
+			articleIDStr := c.Param("articleID")
+			articleID, err := strconv.ParseUint(articleIDStr, 10, 32)
 			if err != nil {
 				panic(err)
 			}
-			tag := db.Tag{ArticleID: articleId}
+			tag := db.Tag{ArticleID: articleID}
 			// Validation
 			if err := c.Bind(&tag); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"message": err})
