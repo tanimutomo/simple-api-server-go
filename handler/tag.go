@@ -44,7 +44,7 @@ func AddTag() gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"message": err})
 			} else {
 				if err := db.AddTag(tag, username); err != nil {
-					c.JSON(http.StatusOK, gin.H{"message": err})
+					c.JSON(http.StatusBadRequest, gin.H{"message": err})
 				} else {
 					c.JSON(http.StatusOK, gin.H{"message": "Success to add a new tag"})
 				}
