@@ -1,21 +1,38 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/tanimutomo/simple-api-server-go/article"
-	"github.com/tanimutomo/simple-api-server-go/auth"
+	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/tanimutomo/simple-api-server-go/db"
 	"github.com/tanimutomo/simple-api-server-go/handler"
 )
 
 func main() {
-	var articles article.Articles
-	articles = &article.ArticleList{}
-	// users := user.New()
-
 	r := gin.Default()
-	r.GET("/auth", auth.GetToken())
-	r.GET("/articles", handler.ArticleGet(articles))
-	r.POST("/articles/new", handler.ArticlePost(articles))
 
-	r.Run()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db.Init()
+
+	// Signup
+	r.POST("/signup", handler.Signup())
+	// Login
+	r.POST("/login", handler.Login())
+
+	// Get a list of tweets
+	r.GET("/users/:username/articles", handler.GetArticles())
+	// Post a new tweet
+	r.POST("/users/:username/articles", handler.PostArticle())
+	// Update
+	r.POST("/users/:username/articles/:articleId", handler.UpdateArticle())
+	// Delete
+	r.DELETE("/users/:username/articles/:articleId", handler.DeleteArticle())
+
+	r.Run(":8080")
 }

@@ -7,41 +7,33 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	jwtrequest "github.com/dgrijalva/jwt-go/request"
-	"github.com/gin-gonic/gin"
+	"github.com/tanimutomo/simple-api-server-go/db"
 )
-
-func GetToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		tokenString := getToken()
-		c.JSON(http.StatusOK, gin.H{"token": tokenString})
-	}
-}
 
 func VerifyToken(request *http.Request) (*jwt.Token, error) {
 	// Verrify signature
 	return jwtrequest.ParseFromRequest(
 		request, jwtrequest.OAuth2Extractor,
 		func(token *jwt.Token) (interface{}, error) {
-			b := []byte(os.Getenv("SIGNINGKEY"))
+			b := []byte(os.Getenv("SASG_SECRET"))
 			return b, nil
 		},
 	)
 }
 
-func getToken() string {
+func GetToken(user db.User) string {
 	// set header
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// set claims (json contents)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["admin"] = true
-	claims["name"] = "taro"
-	claims["email"] = "taro@example.com"
+	claims["username"] = user.Username
+	claims["email"] = user.Email
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
 	// signature
-	tokenString, _ := token.SignedString([]byte(os.Getenv("SIGNINGKEY")))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("SASG_SECRET")))
 
 	return tokenString
 }
