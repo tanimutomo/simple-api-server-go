@@ -22,20 +22,25 @@ func AddTag() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
 		articleIDStr := c.Param("articleID")
+
 		articleID, err := strconv.ParseUint(articleIDStr, 10, 32)
 		if err != nil {
 			panic(err)
 		}
 		tag := db.Tag{ArticleID: articleID}
+
 		// Validation
 		if err := c.Bind(&tag); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err})
-		} else {
-			if err := db.AddTag(tag, username); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"message": err})
-			} else {
-				c.JSON(http.StatusOK, gin.H{"message": "Success to add a new tag"})
-			}
+			c.Abort()
 		}
+
+		// Insert a new tag to DB
+		if err := db.AddTag(tag, username); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err})
+			c.Abort()
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Success to add a new tag"})
 	}
 }
