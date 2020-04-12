@@ -1,4 +1,12 @@
 # Simple API Server by GO
+Used packages
+- Gin: https://github.com/gin-gonic/gin
+- Grom: https://github.com/jinzhu/gorm
+- MySQL: https://github.com/go-sql-driver/mysql
+- GoDotEnv: https://github.com/joho/godotenv
+- jwt-go: https://github.com/dgrijalva/jwt-go
+- bcrypt: https://golang.org/x/crypto/bcrypt
+
 Features
 - Signup and Login
 - Post and get a article
