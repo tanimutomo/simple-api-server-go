@@ -3,6 +3,7 @@ package db
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"net/http"
 )
 
 type Tag struct {
@@ -12,25 +13,36 @@ type Tag struct {
 }
 
 // Get all tags
-func GetTags(username string) []Tag {
-	db := gormConnect()
+func GetTags(username string) ([]Tag, ErrorResponse) {
+	var tags []Tag
+
+	db, errResp := gormConnect()
+	if errResp.IsError {
+		return tags, errResp
+	}
 
 	defer db.Close()
-	var tags []Tag
 	db.Table("tags").Select("tags.name").Joins("left join articles on tags.article_id = articles.id").Find(&tags)
-	return tags
+	return tags, ErrorResponse{IsError: false}
 }
 
 // Add tags to article
-func AddTag(tag Tag, username string) string {
-	db := gormConnect()
+func AddTag(tag Tag, username string) ErrorResponse {
+	db, errResp := gormConnect()
+	if errResp.IsError {
+		return errResp
+	}
 
 	// Check the requested tag is already exists
 	defer db.Close()
 	var count int
 	db.Table("tags").Joins("left join articles on tags.article_id = articles.id").Where("articles.username = ? AND articles.id = ? AND tags.name = ?", username, tag.ArticleID, tag.Name).Count(&count)
 	if count != 0 {
-		return "This article has already the requested tag. Can't give same tags to one article."
+		return ErrorResponse{
+			IsError: true,
+			Status:  http.StatusBadRequest,
+			Message: "This article has already the requested tag. Can't give same tags to one article.",
+		}
 	}
 
 	// Add a new tag
@@ -38,5 +50,5 @@ func AddTag(tag Tag, username string) string {
 		Name:      tag.Name,
 		ArticleID: tag.ArticleID,
 	})
-	return ""
+	return ErrorResponse{IsError: false}
 }

@@ -18,8 +18,9 @@ func Signup() gin.HandlerFunc {
 		}
 
 		// Check same username exists
-		if errmsg := db.CreateUser(user); errmsg != "" {
-			BadRequestError(c, errmsg)
+		errResp := db.CreateUser(user)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
 		}
 
 		c.JSON(http.StatusOK, user)
@@ -36,9 +37,9 @@ func Login() gin.HandlerFunc {
 		}
 
 		// Check whether user is exists
-		dbUser, errmsg := db.GetUser(loginUser.Username)
-		if errmsg != "" {
-			BadRequestError(c, errmsg)
+		dbUser, errResp := db.GetUser(loginUser.Username)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
 		}
 
 		// Compare sent password to db password

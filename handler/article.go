@@ -12,7 +12,10 @@ import (
 func GetArticles() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
-		articles := db.GetArticles(username)
+		articles, errResp := db.GetArticles(username)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
+		}
 		c.JSON(http.StatusOK, gin.H{"articles": articles})
 	}
 }
@@ -28,7 +31,10 @@ func PostArticle() gin.HandlerFunc {
 			BadRequestError(c, "Requested article is an invalid format")
 		}
 
-		db.PostArticle(article)
+		errResp := db.PostArticle(article)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
+		}
 		c.JSON(http.StatusOK, article)
 	}
 }
@@ -49,8 +55,11 @@ func UpdateArticle() gin.HandlerFunc {
 		if err := c.Bind(&article); err != nil {
 			BadRequestError(c, "Requested article is an invalid format")
 		}
-		if errmsg := db.UpdateArticle(articleID, article); errmsg != "" {
-			BadRequestError(c, errmsg)
+
+		// Update article contents
+		errResp := db.UpdateArticle(articleID, article)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
 		}
 
 		c.JSON(http.StatusOK, article)
@@ -70,8 +79,9 @@ func DeleteArticle() gin.HandlerFunc {
 		}
 
 		// Delete article
-		if errmsg := db.DeleteArticle(articleID, username); errmsg != "" {
-			BadRequestError(c, errmsg)
+		errResp := db.DeleteArticle(articleID, username)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
 		}
 
 		c.JSON(http.StatusOK, gin.H{"username": username, "articleID": articleID})

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"net/http"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/tanimutomo/simple-api-server-go/crypto"
@@ -20,9 +22,13 @@ type LoginUser struct {
 }
 
 // Register a new user
-func CreateUser(user User) string {
+func CreateUser(user User) ErrorResponse {
 	passwordEncrypt, _ := crypto.PasswordEncrypt(user.Password)
-	db := gormConnect()
+	db, errResp := gormConnect()
+	if errResp.IsError {
+		return errResp
+	}
+
 	defer db.Close()
 
 	// Insert a new user to db
@@ -33,18 +39,31 @@ func CreateUser(user User) string {
 			Email:    user.Email,
 		},
 	).Error; err != nil {
-		return "Requested user is not compatible."
+		return ErrorResponse{
+			IsError: true,
+			Status:  http.StatusBadRequest,
+			Message: "Requested user is not compatible.",
+		}
 	}
-	return ""
+	return ErrorResponse{IsError: false}
 }
 
 // Find a user
-func GetUser(username string) (User, string) {
-	db := gormConnect()
+func GetUser(username string) (User, ErrorResponse) {
 	var user User
+
+	db, errResp := gormConnect()
+	if errResp.IsError {
+		return user, errResp
+	}
+
 	if err := db.First(&user, "username = ?", username).Error; err != nil {
-		return user, "Requested user does not exists."
+		return user, ErrorResponse{
+			IsError: true,
+			Status:  http.StatusBadRequest,
+			Message: "Requested user does not exists.",
+		}
 	}
 	db.Close()
-	return user, ""
+	return user, ErrorResponse{IsError: false}
 }

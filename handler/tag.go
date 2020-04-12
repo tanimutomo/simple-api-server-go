@@ -12,7 +12,10 @@ import (
 func GetTags() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
-		tags := db.GetTags(username)
+		tags, errResp := db.GetTags(username)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
+		}
 		c.JSON(http.StatusOK, gin.H{"tags": tags})
 	}
 }
@@ -36,8 +39,9 @@ func AddTag() gin.HandlerFunc {
 		}
 
 		// Insert a new tag to DB
-		if errmsg := db.AddTag(tag, username); errmsg != "" {
-			BadRequestError(c, errmsg)
+		errResp := db.AddTag(tag, username)
+		if errResp.IsError {
+			SendErrorResponse(c, errResp.Status, errResp.Message)
 		}
 
 		c.JSON(http.StatusOK, tag)
