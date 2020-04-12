@@ -93,8 +93,5 @@ func updateArticleContents(currentArticle *Article, newArticle Article) interfac
 }
 
 func isUserMatched(usernameA string, usernameB string) bool {
-	if usernameA != usernameB {
-		return false
-	}
-	return true
+	return usernameA != usernameB
 }
