@@ -58,6 +58,9 @@ func Login() gin.HandlerFunc {
 		}
 
 		tokenString := GetToken(dbUser)
-		c.JSON(http.StatusOK, gin.H{"user": dbUser, "token": tokenString})
+		c.JSON(http.StatusOK, gin.H{
+			"username": loginUser.Username,
+			"token":    tokenString,
+		})
 	}
 }
