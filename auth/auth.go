@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"time"
@@ -10,15 +11,20 @@ import (
 	"github.com/tanimutomo/simple-api-server-go/db"
 )
 
-func VerifyToken(request *http.Request) (*jwt.Token, error) {
-	// Verrify signature
-	return jwtrequest.ParseFromRequest(
-		request, jwtrequest.OAuth2Extractor,
-		func(token *jwt.Token) (interface{}, error) {
-			b := []byte(os.Getenv("SASG_SECRET"))
-			return b, nil
-		},
-	)
+func VerifyToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, err := jwtrequest.ParseFromRequest(
+			c.Request, jwtrequest.OAuth2Extractor,
+			func(token *jwt.Token) (interface{}, error) {
+				b := []byte(os.Getenv("SASG_SECRET"))
+				return b, nil
+			},
+		)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
+			c.Abort()
+		}
+	}
 }
 
 func GetToken(user db.User) string {
