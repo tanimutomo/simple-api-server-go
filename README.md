@@ -34,6 +34,8 @@ Content-Type : application/json
 ```
 
 - Login
+
+Please copy the token included in the request response. It is used in the requests to operate articles and tags (below).
 ```
 # Endpoint
 /login
