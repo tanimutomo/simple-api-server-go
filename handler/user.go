@@ -8,6 +8,11 @@ import (
 	"github.com/tanimutomo/simple-api-server-go/db"
 )
 
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 // Signup
 func Signup() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -30,7 +35,8 @@ func Signup() gin.HandlerFunc {
 // Login
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var loginUser db.LoginUser
+		var loginUser LoginRequest
+
 		// Validate request
 		if err := c.Bind(&loginUser); err != nil {
 			BadRequestError(c, "Requested login user is an invalid format")

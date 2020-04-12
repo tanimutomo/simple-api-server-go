@@ -15,12 +15,6 @@ type User struct {
 	Email    string `json:"email" binding:"required"`
 }
 
-type LoginUser struct {
-	gorm.Model
-	Username string `json:"username" binding:"required" gorm:"unique;not null"`
-	Password string `json:"password" binding:"required"`
-}
-
 // Register a new user
 func CreateUser(user User) ErrorResponse {
 	passwordEncrypt, _ := crypto.PasswordEncrypt(user.Password)
