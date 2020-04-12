@@ -12,6 +12,7 @@ import (
 func GetTags() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
+
 		tags, errResp := db.GetTags(username)
 		if errResp.IsError {
 			SendErrorResponse(c, errResp.Status, errResp.Message)

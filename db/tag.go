@@ -22,7 +22,7 @@ func GetTags(username string) ([]Tag, ErrorResponse) {
 	}
 
 	defer db.Close()
-	db.Table("tags").Select("tags.name").Joins("left join articles on tags.article_id = articles.id").Find(&tags)
+	db.Table("tags").Select("tags.*").Joins("left join articles on tags.article_id = articles.id").Find(&tags)
 	return tags, ErrorResponse{IsError: false}
 }
 
