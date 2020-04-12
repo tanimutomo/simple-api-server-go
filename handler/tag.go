@@ -23,24 +23,23 @@ func AddTag() gin.HandlerFunc {
 		username := c.Param("username")
 		articleIDStr := c.Param("articleID")
 
+		// Check articleID compatibility
 		articleID, err := strconv.ParseUint(articleIDStr, 10, 32)
 		if err != nil {
-			panic(err)
+			NotFoundError(c, "articleID is invalid type. It should be uint.")
 		}
 		tag := db.Tag{ArticleID: articleID}
 
 		// Validation
 		if err := c.Bind(&tag); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err})
-			c.Abort()
+			BadRequestError(c, "Requested tag is an invalid format")
 		}
 
 		// Insert a new tag to DB
-		if err := db.AddTag(tag, username); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err})
-			c.Abort()
+		if errmsg := db.AddTag(tag, username); errmsg != "" {
+			BadRequestError(c, errmsg)
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Success to add a new tag"})
+		c.JSON(http.StatusOK, tag)
 	}
 }

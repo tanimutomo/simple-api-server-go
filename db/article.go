@@ -40,27 +40,28 @@ func PostArticle(article Article) {
 }
 
 // Update DB
-func UpdateArticle(articleID int, updateArticle Article) interface{} {
+func UpdateArticle(articleID int, updateArticle Article) string {
 	db := gormConnect()
 
 	// Delete old tags associated to this article
 	var tag Tag
 	db.Where("article_id = ?", articleID).Delete(&tag)
 
-	// Update article
+	// Check user is compatible
 	var article Article
 	db.First(&article, articleID)
-	if err := updateArticleContents(&article, updateArticle); err != nil {
-		return err
+	if !isUserMatched(article.Username, updateArticle.Username) {
+		return "User is not matched"
 	}
-	db.Save(&article)
 
+	updateArticleContents(&article, updateArticle)
+	db.Save(&article)
 	db.Close()
-	return nil
+	return ""
 }
 
 // Delete a article
-func DeleteArticle(id int, username string) interface{} {
+func DeleteArticle(id int, username string) string {
 	db := gormConnect()
 	var article Article
 	if err := db.First(&article, id).Error; err != nil {
@@ -71,15 +72,12 @@ func DeleteArticle(id int, username string) interface{} {
 	}
 	db.Delete(&article)
 	db.Close()
-	return nil
+	return ""
 }
 
 // Utility functions //
 
 func updateArticleContents(currentArticle *Article, newArticle Article) interface{} {
-	if !isUserMatched(currentArticle.Username, newArticle.Username) {
-		return "User is not matched"
-	}
 	if newArticle.Title != "" {
 		currentArticle.Title = newArticle.Title
 	}

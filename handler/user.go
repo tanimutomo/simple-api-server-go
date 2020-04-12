@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tanimutomo/simple-api-server-go/auth"
 	"github.com/tanimutomo/simple-api-server-go/crypto"
 	"github.com/tanimutomo/simple-api-server-go/db"
 )
@@ -16,17 +14,15 @@ func Signup() gin.HandlerFunc {
 		var user db.User
 		// Validation
 		if err := c.Bind(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+			BadRequestError(c, "Requested user is an invalid format")
 		}
 
 		// Check same username exists
-		if err := db.CreateUser(user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+		if errmsg := db.CreateUser(user); errmsg != "" {
+			BadRequestError(c, errmsg)
 		}
 
-		c.JSON(http.StatusFound, gin.H{"message": "Success to signup"})
+		c.JSON(http.StatusOK, user)
 	}
 }
 
@@ -36,16 +32,13 @@ func Login() gin.HandlerFunc {
 		var loginUser db.LoginUser
 		// Validate request
 		if err := c.Bind(&loginUser); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+			BadRequestError(c, "Requested login user is an invalid format")
 		}
 
 		// Check whether user is exists
-		dbUser, err := db.GetUser(loginUser.Username)
-		if err != nil {
-			log.Println("Failed to login")
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+		dbUser, errmsg := db.GetUser(loginUser.Username)
+		if errmsg != "" {
+			BadRequestError(c, errmsg)
 		}
 
 		// Compare sent password to db password
@@ -54,16 +47,10 @@ func Login() gin.HandlerFunc {
 		if err := crypto.CompareHashAndPassword(
 			dbPassword, sentPassword,
 		); err != nil {
-			log.Println("Failed to login")
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+			UnauthorizedError(c, "Invalid password")
 		}
 
-		log.Println("Success to login")
-		tokenString := auth.GetToken(dbUser)
-		c.JSON(
-			http.StatusFound,
-			gin.H{"message": "Success to login", "token": tokenString},
-		)
+		tokenString := GetToken(dbUser)
+		c.JSON(http.StatusOK, gin.H{"user": dbUser, "token": tokenString})
 	}
 }

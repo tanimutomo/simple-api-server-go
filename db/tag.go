@@ -22,7 +22,7 @@ func GetTags(username string) []Tag {
 }
 
 // Add tags to article
-func AddTag(tag Tag, username string) interface{} {
+func AddTag(tag Tag, username string) string {
 	db := gormConnect()
 
 	// Check the requested tag is already exists
@@ -38,5 +38,5 @@ func AddTag(tag Tag, username string) interface{} {
 		Name:      tag.Name,
 		ArticleID: tag.ArticleID,
 	})
-	return nil
+	return ""
 }

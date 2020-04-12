@@ -25,12 +25,11 @@ func PostArticle() gin.HandlerFunc {
 		article := db.Article{Username: username}
 		// Validation
 		if err := c.Bind(&article); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err, "article": article})
-			c.Abort()
+			BadRequestError(c, "Requested article is an invalid format")
 		}
 
 		db.PostArticle(article)
-		c.JSON(http.StatusOK, gin.H{"message": "Success to post a new article"})
+		c.JSON(http.StatusOK, article)
 	}
 }
 
@@ -40,18 +39,21 @@ func UpdateArticle() gin.HandlerFunc {
 		username := c.Param("username")
 		articleIDStr := c.Param("articleID")
 
+		// Check articleID compatibility
 		articleID, err := strconv.Atoi(articleIDStr)
 		if err != nil {
-			panic(err)
-		}
-		article := db.Article{Username: username}
-		c.Bind(&article)
-		if err := db.UpdateArticle(articleID, article); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+			NotFoundError(c, "articleID is invalid type. It should be uint.")
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Sccess to update a article"})
+		article := db.Article{Username: username}
+		if err := c.Bind(&article); err != nil {
+			BadRequestError(c, "Requested article is an invalid format")
+		}
+		if errmsg := db.UpdateArticle(articleID, article); errmsg != "" {
+			BadRequestError(c, errmsg)
+		}
+
+		c.JSON(http.StatusOK, article)
 	}
 }
 
@@ -61,15 +63,17 @@ func DeleteArticle() gin.HandlerFunc {
 		username := c.Param("username")
 		articleIDStr := c.Param("articleID")
 
+		// Check articleID compatibility
 		articleID, err := strconv.Atoi(articleIDStr)
 		if err != nil {
-			panic(err)
-		}
-		if err := db.DeleteArticle(articleID, username); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": err})
-			c.Abort()
+			NotFoundError(c, "articleID is invalid type. It should be uint.")
 		}
 
-		c.JSON(http.StatusFound, gin.H{"message": "Success to delete a article"})
+		// Delete article
+		if errmsg := db.DeleteArticle(articleID, username); errmsg != "" {
+			BadRequestError(c, errmsg)
+		}
+
+		c.JSON(http.StatusOK, gin.H{"username": username, "articleID": articleID})
 	}
 }

@@ -20,7 +20,7 @@ type LoginUser struct {
 }
 
 // Register a new user
-func CreateUser(user User) interface{} {
+func CreateUser(user User) string {
 	passwordEncrypt, _ := crypto.PasswordEncrypt(user.Password)
 	db := gormConnect()
 	defer db.Close()
@@ -33,18 +33,18 @@ func CreateUser(user User) interface{} {
 			Email:    user.Email,
 		},
 	).Error; err != nil {
-		return err
+		return "Requested user is not compatible."
 	}
-	return nil
+	return ""
 }
 
 // Find a user
-func GetUser(username string) (User, error) {
+func GetUser(username string) (User, string) {
 	db := gormConnect()
 	var user User
 	if err := db.First(&user, "username = ?", username).Error; err != nil {
-		return user, err
+		return user, "Requested user does not exists."
 	}
 	db.Close()
-	return user, nil
+	return user, ""
 }

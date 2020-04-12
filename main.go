@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/tanimutomo/simple-api-server-go/auth"
 	"github.com/tanimutomo/simple-api-server-go/db"
 	"github.com/tanimutomo/simple-api-server-go/handler"
 )
@@ -26,7 +25,7 @@ func main() {
 	// Login -> Get token
 	r.POST("/login", handler.Login())
 
-	users := r.Group("/users", auth.VerifyToken())
+	users := r.Group("/users", handler.VerifyToken())
 	{
 		// Get a list of articles
 		users.GET("/:username/articles", handler.GetArticles())
