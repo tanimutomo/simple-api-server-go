@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,9 +24,13 @@ func Signup() gin.HandlerFunc {
 		}
 
 		// Check same username exists
-		errResp := db.CreateUser(user)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		if err := db.CreateUser(user); err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 
 		c.JSON(http.StatusOK, user)
@@ -43,9 +48,14 @@ func Login() gin.HandlerFunc {
 		}
 
 		// Check whether user is exists
-		dbUser, errResp := db.GetUser(loginUser.Username)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		dbUser, err := db.GetUser(loginUser.Username)
+		if err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 
 		// Compare sent password to db password

@@ -16,11 +16,11 @@ type User struct {
 }
 
 // Register a new user
-func CreateUser(user User) ErrorResponse {
+func CreateUser(user User) error {
 	passwordEncrypt, _ := crypto.PasswordEncrypt(user.Password)
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	defer db.Close()
@@ -33,31 +33,29 @@ func CreateUser(user User) ErrorResponse {
 			Email:    user.Email,
 		},
 	).Error; err != nil {
-		return ErrorResponse{
-			IsError: true,
+		return &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "Requested user is not compatible.",
 		}
 	}
-	return ErrorResponse{IsError: false}
+	return nil
 }
 
 // Find a user
-func GetUser(username string) (User, ErrorResponse) {
+func GetUser(username string) (User, error) {
 	var user User
 
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return user, errResp
+	db, err := gormConnect()
+	if err != nil {
+		return user, err
 	}
 
 	if err := db.First(&user, "username = ?", username).Error; err != nil {
-		return user, ErrorResponse{
-			IsError: true,
+		return user, &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "Requested user does not exists.",
 		}
 	}
 	db.Close()
-	return user, ErrorResponse{IsError: false}
+	return user, nil
 }

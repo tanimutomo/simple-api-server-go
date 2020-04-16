@@ -9,12 +9,15 @@ import (
 )
 
 type ErrorResponse struct {
-	IsError bool
 	Status  int
 	Message string
 }
 
-func gormConnect() (*gorm.DB, ErrorResponse) {
+func (e *ErrorResponse) Error() string {
+	return e.Message
+}
+
+func gormConnect() (*gorm.DB, error) {
 	DBMS := os.Getenv("SASG_DBMS")
 	USER := os.Getenv("SASG_USER")
 	PASS := os.Getenv("SASG_PASS")
@@ -25,20 +28,19 @@ func gormConnect() (*gorm.DB, ErrorResponse) {
 	db, err := gorm.Open(DBMS, CONNECT)
 	if err != nil {
 		return nil,
-			ErrorResponse{
-				IsError: true,
+			&ErrorResponse{
 				Status:  http.StatusInternalServerError,
 				Message: "Cannot access to database. " + err.Error(),
 			}
 	}
-	return db, ErrorResponse{IsError: false}
+	return db, nil
 }
 
 // Initialize DB
-func Init() ErrorResponse {
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+func Init() error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	defer db.Close()
@@ -46,5 +48,5 @@ func Init() ErrorResponse {
 	db.AutoMigrate(&Tag{})
 	db.AutoMigrate(&User{})
 
-	return ErrorResponse{IsError: false}
+	return nil
 }

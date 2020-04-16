@@ -13,9 +13,14 @@ func GetTags() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
 
-		tags, errResp := db.GetTags(username)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		tags, err := db.GetTags(username)
+		if err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 		c.JSON(http.StatusOK, gin.H{"tags": tags})
 	}
@@ -40,9 +45,13 @@ func AddTag() gin.HandlerFunc {
 		}
 
 		// Insert a new tag to DB
-		errResp := db.AddTag(tag, username)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		if err := db.AddTag(tag, username); err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 
 		c.JSON(http.StatusOK, tag)

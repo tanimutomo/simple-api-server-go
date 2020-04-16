@@ -16,25 +16,25 @@ type Article struct {
 }
 
 // Get all data
-func GetArticles(username string) ([]Article, ErrorResponse) {
+func GetArticles(username string) ([]Article, error) {
 	var articles []Article
 
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return articles, errResp
+	db, err := gormConnect()
+	if err != nil {
+		return articles, err
 	}
 
 	defer db.Close()
 	// Get all article data by specifying empty condition as the Find argument
 	db.Order("created_at desc").Where("Username = ?", username).Find(&articles)
-	return articles, ErrorResponse{IsError: false}
+	return articles, nil
 }
 
 // Insert data
-func PostArticle(article Article) ErrorResponse {
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+func PostArticle(article Article) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	defer db.Close()
@@ -45,14 +45,14 @@ func PostArticle(article Article) ErrorResponse {
 		Tags:     article.Tags,
 	})
 
-	return ErrorResponse{IsError: false}
+	return nil
 }
 
 // Update DB
-func UpdateArticle(articleID int, updateArticle Article) ErrorResponse {
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+func UpdateArticle(articleID int, updateArticle Article) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	// Delete old tags associated to this article
@@ -63,8 +63,7 @@ func UpdateArticle(articleID int, updateArticle Article) ErrorResponse {
 	var article Article
 	db.First(&article, articleID)
 	if !isUserMatched(article.Username, updateArticle.Username) {
-		return ErrorResponse{
-			IsError: true,
+		return &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "User is not matched",
 		}
@@ -74,27 +73,25 @@ func UpdateArticle(articleID int, updateArticle Article) ErrorResponse {
 	db.Save(&article)
 	db.Close()
 
-	return ErrorResponse{IsError: false}
+	return nil
 }
 
 // Delete a article
-func DeleteArticle(id int, username string) ErrorResponse {
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+func DeleteArticle(id int, username string) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	var article Article
 	if err := db.First(&article, id).Error; err != nil {
-		return ErrorResponse{
-			IsError: true,
+		return &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "The article is not existed.",
 		}
 	}
 	if !isUserMatched(article.Username, username) {
-		return ErrorResponse{
-			IsError: true,
+		return &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "User is not matched",
 		}
@@ -103,7 +100,7 @@ func DeleteArticle(id int, username string) ErrorResponse {
 	db.Delete(&article)
 	db.Close()
 
-	return ErrorResponse{IsError: false}
+	return nil
 }
 
 // Utility functions //

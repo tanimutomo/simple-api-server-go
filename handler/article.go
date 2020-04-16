@@ -12,9 +12,14 @@ import (
 func GetArticles() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
-		articles, errResp := db.GetArticles(username)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		articles, err := db.GetArticles(username)
+		if err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 		c.JSON(http.StatusOK, gin.H{"articles": articles})
 	}
@@ -31,9 +36,13 @@ func PostArticle() gin.HandlerFunc {
 			BadRequestError(c, "Requested article is an invalid format")
 		}
 
-		errResp := db.PostArticle(article)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		if err := db.PostArticle(article); err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 		c.JSON(http.StatusOK, article)
 	}
@@ -57,9 +66,13 @@ func UpdateArticle() gin.HandlerFunc {
 		}
 
 		// Update article contents
-		errResp := db.UpdateArticle(articleID, article)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		if err := db.UpdateArticle(articleID, article); err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 
 		c.JSON(http.StatusOK, article)
@@ -79,9 +92,13 @@ func DeleteArticle() gin.HandlerFunc {
 		}
 
 		// Delete article
-		errResp := db.DeleteArticle(articleID, username)
-		if errResp.IsError {
-			SendErrorResponse(c, errResp.Status, errResp.Message)
+		if err = db.DeleteArticle(articleID, username); err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
 		}
 
 		c.JSON(http.StatusOK, gin.H{"username": username, "articleID": articleID})

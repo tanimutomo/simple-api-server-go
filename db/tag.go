@@ -13,24 +13,24 @@ type Tag struct {
 }
 
 // Get all tags
-func GetTags(username string) ([]Tag, ErrorResponse) {
+func GetTags(username string) ([]Tag, error) {
 	var tags []Tag
 
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return tags, errResp
+	db, err := gormConnect()
+	if err != nil {
+		return tags, err
 	}
 
 	defer db.Close()
 	db.Table("tags").Select("tags.*").Joins("left join articles on tags.article_id = articles.id").Find(&tags)
-	return tags, ErrorResponse{IsError: false}
+	return tags, nil
 }
 
 // Add tags to article
-func AddTag(tag Tag, username string) ErrorResponse {
-	db, errResp := gormConnect()
-	if errResp.IsError {
-		return errResp
+func AddTag(tag Tag, username string) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
 	}
 
 	// Check the requested tag is already exists
@@ -38,8 +38,7 @@ func AddTag(tag Tag, username string) ErrorResponse {
 	var count int
 	db.Table("tags").Joins("left join articles on tags.article_id = articles.id").Where("articles.username = ? AND articles.id = ? AND tags.name = ?", username, tag.ArticleID, tag.Name).Count(&count)
 	if count != 0 {
-		return ErrorResponse{
-			IsError: true,
+		return &ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: "This article has already the requested tag. Can't give same tags to one article.",
 		}
@@ -50,5 +49,5 @@ func AddTag(tag Tag, username string) ErrorResponse {
 		Name:      tag.Name,
 		ArticleID: tag.ArticleID,
 	})
-	return ErrorResponse{IsError: false}
+	return nil
 }
