@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +20,7 @@ func Signup() gin.HandlerFunc {
 		// Validation
 		if err := c.Bind(&user); err != nil {
 			BadRequestError(c, "Requested user is an invalid format")
+			return
 		}
 
 		// Check same username exists
@@ -31,6 +31,7 @@ func Signup() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 
 		c.JSON(http.StatusOK, user)
@@ -56,6 +57,7 @@ func Login() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 
 		// Compare sent password to db password
@@ -65,6 +67,7 @@ func Login() gin.HandlerFunc {
 			dbPassword, sentPassword,
 		); err != nil {
 			UnauthorizedError(c, "Invalid password")
+			return
 		}
 
 		tokenString := GetToken(dbUser)

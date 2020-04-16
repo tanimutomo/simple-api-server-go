@@ -21,6 +21,7 @@ func VerifyToken() gin.HandlerFunc {
 		)
 		if err != nil {
 			UnauthorizedError(c, "Invalid token. "+err.Error())
+			return
 		}
 	}
 }

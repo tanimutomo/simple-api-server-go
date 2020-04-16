@@ -20,6 +20,7 @@ func GetArticles() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"articles": articles})
 	}
@@ -34,6 +35,7 @@ func PostArticle() gin.HandlerFunc {
 		// Validation
 		if err := c.Bind(&article); err != nil {
 			BadRequestError(c, "Requested article is an invalid format")
+			return
 		}
 
 		if err := db.PostArticle(article); err != nil {
@@ -43,6 +45,7 @@ func PostArticle() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 		c.JSON(http.StatusOK, article)
 	}
@@ -58,11 +61,13 @@ func UpdateArticle() gin.HandlerFunc {
 		articleID, err := strconv.Atoi(articleIDStr)
 		if err != nil {
 			NotFoundError(c, "articleID is invalid type. It should be uint.")
+			return
 		}
 
 		article := db.Article{Username: username}
 		if err := c.Bind(&article); err != nil {
 			BadRequestError(c, "Requested article is an invalid format")
+			return
 		}
 
 		// Update article contents
@@ -73,6 +78,7 @@ func UpdateArticle() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 
 		c.JSON(http.StatusOK, article)
@@ -89,6 +95,7 @@ func DeleteArticle() gin.HandlerFunc {
 		articleID, err := strconv.Atoi(articleIDStr)
 		if err != nil {
 			NotFoundError(c, "articleID is invalid type. It should be uint.")
+			return
 		}
 
 		// Delete article
@@ -99,6 +106,7 @@ func DeleteArticle() gin.HandlerFunc {
 			default:
 				InternalServerError(c, "Unknown Type Error")
 			}
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{"username": username, "articleID": articleID})
