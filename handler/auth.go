@@ -1,13 +1,12 @@
-package auth
+package handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	jwtrequest "github.com/dgrijalva/jwt-go/request"
+	"github.com/gin-gonic/gin"
 	"github.com/tanimutomo/simple-api-server-go/db"
 )
 
@@ -21,8 +20,8 @@ func VerifyToken() gin.HandlerFunc {
 			},
 		)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
-			c.Abort()
+			UnauthorizedError(c, "Invalid token. "+err.Error())
+			return
 		}
 	}
 }

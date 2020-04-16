@@ -1,7 +1,7 @@
 package db
 
 import (
-	// "log"
+	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -16,19 +16,26 @@ type Article struct {
 }
 
 // Get all data
-func GetArticles(username string) []Article {
-	db := gormConnect()
+func GetArticles(username string) ([]Article, error) {
+	var articles []Article
+
+	db, err := gormConnect()
+	if err != nil {
+		return articles, err
+	}
 
 	defer db.Close()
-	var articles []Article
 	// Get all article data by specifying empty condition as the Find argument
 	db.Order("created_at desc").Where("Username = ?", username).Find(&articles)
-	return articles
+	return articles, nil
 }
 
 // Insert data
-func PostArticle(article Article) {
-	db := gormConnect()
+func PostArticle(article Article) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
+	}
 
 	defer db.Close()
 	db.Create(&Article{
@@ -37,49 +44,68 @@ func PostArticle(article Article) {
 		Username: article.Username,
 		Tags:     article.Tags,
 	})
+
+	return nil
 }
 
 // Update DB
-func UpdateArticle(articleID int, updateArticle Article) interface{} {
-	db := gormConnect()
+func UpdateArticle(articleID int, updateArticle Article) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
+	}
 
 	// Delete old tags associated to this article
 	var tag Tag
 	db.Where("article_id = ?", articleID).Delete(&tag)
 
-	// Update article
+	// Check user is compatible
 	var article Article
 	db.First(&article, articleID)
-	if err := updateArticleContents(&article, updateArticle); err != nil {
-		return err
+	if !isUserMatched(article.Username, updateArticle.Username) {
+		return &ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "User is not matched",
+		}
 	}
-	db.Save(&article)
 
+	updateArticleContents(&article, updateArticle)
+	db.Save(&article)
 	db.Close()
+
 	return nil
 }
 
 // Delete a article
-func DeleteArticle(id int, username string) interface{} {
-	db := gormConnect()
+func DeleteArticle(id int, username string) error {
+	db, err := gormConnect()
+	if err != nil {
+		return err
+	}
+
 	var article Article
 	if err := db.First(&article, id).Error; err != nil {
-		return "The article is not existed."
+		return &ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "The article is not existed.",
+		}
 	}
 	if !isUserMatched(article.Username, username) {
-		return "User is not matched"
+		return &ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "User is not matched",
+		}
 	}
+
 	db.Delete(&article)
 	db.Close()
+
 	return nil
 }
 
 // Utility functions //
 
 func updateArticleContents(currentArticle *Article, newArticle Article) interface{} {
-	if !isUserMatched(currentArticle.Username, newArticle.Username) {
-		return "User is not matched"
-	}
 	if newArticle.Title != "" {
 		currentArticle.Title = newArticle.Title
 	}

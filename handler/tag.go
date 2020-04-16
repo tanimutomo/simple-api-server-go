@@ -12,7 +12,17 @@ import (
 func GetTags() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.Param("username")
-		tags := db.GetTags(username)
+
+		tags, err := db.GetTags(username)
+		if err != nil {
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"tags": tags})
 	}
 }
@@ -23,24 +33,31 @@ func AddTag() gin.HandlerFunc {
 		username := c.Param("username")
 		articleIDStr := c.Param("articleID")
 
+		// Check articleID compatibility
 		articleID, err := strconv.ParseUint(articleIDStr, 10, 32)
 		if err != nil {
-			panic(err)
+			NotFoundError(c, "articleID is invalid type. It should be uint.")
+			return
 		}
 		tag := db.Tag{ArticleID: articleID}
 
 		// Validation
 		if err := c.Bind(&tag); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err})
-			c.Abort()
+			BadRequestError(c, "Requested tag is an invalid format")
+			return
 		}
 
 		// Insert a new tag to DB
 		if err := db.AddTag(tag, username); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err})
-			c.Abort()
+			switch e := err.(type) {
+			case *db.ErrorResponse:
+				SendErrorResponse(c, e.Status, e.Message)
+			default:
+				InternalServerError(c, "Unknown Type Error")
+			}
+			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Success to add a new tag"})
+		c.JSON(http.StatusOK, tag)
 	}
 }
